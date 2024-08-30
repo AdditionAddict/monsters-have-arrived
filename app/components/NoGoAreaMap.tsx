@@ -27,12 +27,12 @@ export default function NoGoAreaMap({
   }
 
   return (
-    <div className="max-w-4xl mx-auto p-4">
+    <div className="max-w-6xl mx-auto p-4">
       <div className="mb-4 rounded-lg overflow-hidden shadow-lg">
         <MapContainer 
           center={center} 
           zoom={13} 
-          className="h-96 w-full"
+          className="h-[600px] w-full"
         >
           <MapEvents onClick={onMapClick} />
           <TileLayer
@@ -45,33 +45,46 @@ export default function NoGoAreaMap({
               key={index}
               positions={area}
               pathOptions={{
-                fillColor: 'blue',
-                fillOpacity: 0.3,
-                color: 'blue',
-                weight: 2,
-              }}
-            />
-          ))}
-          
-          {currentNoGoArea.length > 0 && (
-            <Polygon
-              positions={currentNoGoArea}
-              pathOptions={{
                 fillColor: 'red',
                 fillOpacity: 0.3,
                 color: 'red',
                 weight: 2,
               }}
             />
+          ))}
+          
+          {currentNoGoArea.length > 0 && (
+            <>
+              <Polygon
+                positions={currentNoGoArea}
+                pathOptions={{
+                  fillColor: 'blue',
+                  fillOpacity: 0.3,
+                  color: 'blue',
+                  weight: 2,
+                }}
+              />
+              {isDrawing && (
+                <Polyline
+                  positions={[currentNoGoArea[0], currentNoGoArea[currentNoGoArea.length - 1]]}
+                  pathOptions={{
+                    color: 'blue',
+                    weight: 2,
+                    dashArray: '5, 5',
+                  }}
+                />
+              )}
+            </>
           )}
           
-          {isDrawing && (
-            <Polyline
-              positions={currentNoGoArea}
+          {isDrawing && currentNoGoArea.length > 0 && (
+            <Polygon
+              positions={[currentNoGoArea[0]]}
               pathOptions={{
-                color: 'red',
-                weight: 2,
-                dashArray: '5, 5',
+                fillColor: 'blue',
+                fillOpacity: 1,
+                color: 'blue',
+                weight: 5,
               }}
             />
           )}
