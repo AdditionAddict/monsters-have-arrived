@@ -8,6 +8,7 @@ import 'leaflet/dist/leaflet.css';
 import { lazy, Suspense, useCallback, useEffect, useState } from 'react';
 import { ClientOnly } from 'remix-utils/client-only';
 import { GeneralErrorBoundary } from "~/components/error-boundary";
+import Navbar from "~/components/navbar";
 import { api } from "../../convex/_generated/api";
 
 const NoGoAreaMap = lazy(() => import('../components/NoGoAreaMap'));
@@ -88,8 +89,11 @@ export default function NoGoAreas() {
   };
 
   return (
+
+    <div className="max-w-6xl mx-auto p-4">
+           <Navbar />
+    
     <div>
-      <h1>No-Go Area Map</h1>
       {!isAuthenticated && (
         <div>
           <p>Please sign in to save no-go areas.</p>
@@ -110,6 +114,7 @@ export default function NoGoAreas() {
           </Suspense>
         )}
       </ClientOnly>
+    </div>
     </div>
   );
 }

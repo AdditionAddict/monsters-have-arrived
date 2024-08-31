@@ -80,8 +80,6 @@ export function Layout({ children }: { children: React.ReactNode }) {
   const data = useLoaderData<LoaderData>();
   const convexUrl = data.ENV.CONVEX_URL;
   const clerkPubKey = data.ENV.CLERK_PUBLISHABLE_KEY;
-
-  console.log(data);  
   
   const [convex] = useState(() => new ConvexReactClient(convexUrl));
 
