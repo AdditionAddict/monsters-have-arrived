@@ -10,13 +10,13 @@ interface NoGoAreaMapProps {
   userLocation: [number, number];
 }
 
-export default function NoGoAreaMap({ 
-  currentNoGoArea, 
-  existingNoGoAreas, 
-  isDrawing, 
-  onMapClick, 
+export default function NoGoAreaMap({
+  currentNoGoArea,
+  existingNoGoAreas,
+  isDrawing,
+  onMapClick,
   onSave,
-  userLocation
+  userLocation,
 }: NoGoAreaMapProps) {
   function MapEvents({ onClick }: { onClick: (e: LeafletMouseEvent) => void }) {
     useMapEvents({
@@ -28,17 +28,13 @@ export default function NoGoAreaMap({
   return (
     <div className="max-w-6xl mx-auto p-4">
       <div className="mb-4 rounded-lg overflow-hidden shadow-lg">
-        <MapContainer 
-          center={userLocation}
-          zoom={13} 
-          className="h-[600px] w-full"
-        >
+        <MapContainer center={userLocation} zoom={13} className="h-[600px] w-full">
           <MapEvents onClick={onMapClick} />
           <TileLayer
             url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
             attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
           />
-          
+
           {existingNoGoAreas.map((area, index) => (
             <Polygon
               key={index}
@@ -51,7 +47,7 @@ export default function NoGoAreaMap({
               }}
             />
           ))}
-          
+
           {currentNoGoArea.length > 0 && (
             <>
               <Polygon
@@ -75,7 +71,7 @@ export default function NoGoAreaMap({
               )}
             </>
           )}
-          
+
           {isDrawing && currentNoGoArea.length > 0 && (
             <Polygon
               positions={[currentNoGoArea[0]]}
@@ -94,7 +90,7 @@ export default function NoGoAreaMap({
         className="w-full bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded transition duration-300 ease-in-out"
         disabled={!isDrawing && currentNoGoArea.length < 3}
       >
-        {isDrawing ? "Finish and Save No-Go Area" : "Save No-Go Area"}
+        {isDrawing ? 'Finish and Save No-Go Area' : 'Save No-Go Area'}
       </button>
     </div>
   );

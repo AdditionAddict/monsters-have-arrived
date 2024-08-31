@@ -1,4 +1,4 @@
-import { SignIn } from '@clerk/clerk-react'
+import { SignIn } from '@clerk/clerk-react';
 
 export default function SignInPage() {
   return (
@@ -6,5 +6,5 @@ export default function SignInPage() {
       <h1>Sign In route</h1>
       <SignIn />
     </div>
-  )
+  );
 }

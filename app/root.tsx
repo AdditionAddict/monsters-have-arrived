@@ -1,6 +1,6 @@
-import { ClerkProvider, useAuth } from "@clerk/clerk-react";
-import { rootAuthLoader } from "@clerk/remix/ssr.server";
-import type { LoaderFunction } from "@remix-run/node";
+import { ClerkProvider, useAuth } from '@clerk/clerk-react';
+import { rootAuthLoader } from '@clerk/remix/ssr.server';
+import type { LoaderFunction } from '@remix-run/node';
 import {
   isRouteErrorResponse,
   json,
@@ -11,11 +11,11 @@ import {
   ScrollRestoration,
   useLoaderData as useRemixLoaderData,
   useRouteError,
-} from "@remix-run/react";
-import { ConvexReactClient } from "convex/react";
-import { ConvexProviderWithClerk } from "convex/react-clerk";
-import { useState } from "react";
-import "./tailwind.css";
+} from '@remix-run/react';
+import { ConvexReactClient } from 'convex/react';
+import { ConvexProviderWithClerk } from 'convex/react-clerk';
+import { useState } from 'react';
+import './tailwind.css';
 
 type LoaderData = {
   ENV: {
@@ -34,17 +34,17 @@ export const loader: LoaderFunction = (args) => {
     const clerkPubKey = process.env.CLERK_PUBLISHABLE_KEY;
 
     if (!convexUrl) {
-      throw new Error("Missing CONVEX_URL");
+      throw new Error('Missing CONVEX_URL');
     }
 
     if (!clerkPubKey) {
-      throw new Error("Missing CLERK_PUBLISHABLE_KEY");
+      throw new Error('Missing CLERK_PUBLISHABLE_KEY');
     }
 
     return json({
       ENV: {
         CONVEX_URL: convexUrl,
-        CLERK_PUBLISHABLE_KEY: clerkPubKey
+        CLERK_PUBLISHABLE_KEY: clerkPubKey,
       },
     } satisfies LoaderData);
   });
@@ -80,7 +80,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
   const data = useLoaderData<LoaderData>();
   const convexUrl = data.ENV.CONVEX_URL;
   const clerkPubKey = data.ENV.CLERK_PUBLISHABLE_KEY;
-  
+
   const [convex] = useState(() => new ConvexReactClient(convexUrl));
 
   return (
@@ -93,8 +93,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
       </head>
       <body>
         <ClerkProvider publishableKey={clerkPubKey}>
-          <ConvexProviderWithClerk client={convex} useAuth={useAuth}
-          >
+          <ConvexProviderWithClerk client={convex} useAuth={useAuth}>
             {children}
           </ConvexProviderWithClerk>
         </ClerkProvider>
@@ -106,9 +105,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
 }
 
 function App() {
-  return (
-      <Outlet />
-  );
+  return <Outlet />;
 }
 
 export default App;
