@@ -1,10 +1,13 @@
+import { SignInButton } from "@clerk/clerk-react";
 import { getAuth } from "@clerk/remix/ssr.server";
 import { redirect, type LoaderFunctionArgs } from "@remix-run/node";
-import { useMutation, useQuery } from "convex/react";
+import { useLoaderData } from "@remix-run/react";
+import { useConvexAuth, useMutation, useQuery } from "convex/react";
 import { LeafletMouseEvent } from 'leaflet';
 import 'leaflet/dist/leaflet.css';
-import { lazy, Suspense, useCallback, useState } from 'react';
+import { lazy, Suspense, useCallback, useEffect, useState } from 'react';
 import { ClientOnly } from 'remix-utils/client-only';
+import { GeneralErrorBoundary } from "~/components/error-boundary";
 import { api } from "../../convex/_generated/api";
 
 const NoGoAreaMap = lazy(() => import('../components/NoGoAreaMap'));
@@ -18,10 +21,29 @@ export async function loader(args: LoaderFunctionArgs) {
 }
 
 export default function NoGoAreas() {
+  const { userId } = useLoaderData<typeof loader>();
   const noGoAreas = useQuery(api.noGoAreas.list) || [];
   const saveNoGoArea = useMutation(api.noGoAreas.save);
+  const createOrUpdateUser = useMutation(api.users.createOrUpdate);
   const [currentNoGoArea, setCurrentNoGoArea] = useState<[number, number][]>([]);
   const [isDrawing, setIsDrawing] = useState(false);
+  const [userLocation, setUserLocation] = useState<[number, number]>([0, 0]);
+  const { isAuthenticated } = useConvexAuth();
+
+  useEffect(() => {
+    navigator.geolocation.getCurrentPosition(
+      (position) => {
+        const { latitude, longitude } = position.coords;
+        setUserLocation([latitude, longitude]);
+        createOrUpdateUser({ userId, location: [latitude, longitude] });
+      },
+      (error) => {
+        console.error("Error getting user location:", error);
+        // Set a default location if geolocation fails
+        setUserLocation([51.505, -0.09]);
+      }
+    );
+  }, [createOrUpdateUser, userId]);
 
   const handleMapClick = useCallback((e: LeafletMouseEvent) => {
     const newPoint: [number, number] = [e.latlng.lat, e.latlng.lng];
@@ -45,10 +67,21 @@ export default function NoGoAreas() {
   }, [currentNoGoArea, isDrawing]);
 
   const handleSave = async () => {
+    if (!isAuthenticated) {
+      alert("Please sign in to save a no-go area.");
+      return;
+    }
+
     if (currentNoGoArea.length > 2) {
-      await saveNoGoArea({ coordinates: currentNoGoArea });
-      setCurrentNoGoArea([]);
-      setIsDrawing(false);
+      try {
+        await saveNoGoArea({ coordinates: currentNoGoArea });
+        await createOrUpdateUser({ location: userLocation, userId });
+        setCurrentNoGoArea([]);
+        setIsDrawing(false);
+      } catch (error) {
+        console.error("Error saving no-go area:", error);
+        alert("Failed to save no-go area. Please try again.");
+      }
     } else {
       alert("Please define a valid no-go area before saving.");
     }
@@ -57,12 +90,19 @@ export default function NoGoAreas() {
   return (
     <div>
       <h1>No-Go Area Map</h1>
+      {!isAuthenticated && (
+        <div>
+          <p>Please sign in to save no-go areas.</p>
+          <SignInButton />
+        </div>
+      )}
       <ClientOnly fallback={<div>Loading map...</div>}>
         {() => (
           <Suspense fallback={<div>Loading map...</div>}>
             <NoGoAreaMap
+              userLocation={userLocation}
               currentNoGoArea={currentNoGoArea}
-              existingNoGoAreas={noGoAreas.map(area => area.coordinates)}
+              existingNoGoAreas={noGoAreas.map(area => area.coordinates as [number, number][])}
               isDrawing={isDrawing}
               onMapClick={handleMapClick}
               onSave={handleSave}
@@ -71,5 +111,18 @@ export default function NoGoAreas() {
         )}
       </ClientOnly>
     </div>
+  );
+}
+
+// This ensures that the error boundary is used for this route
+export function ErrorBoundary() {
+  return (
+    <GeneralErrorBoundary
+      statusHandlers={{
+        404: ({ params }) => (
+          <p>No go area with the id &apos;{params.noGoAreaId}&apos; exists</p>
+        ),
+      }}
+    />
   );
 }

@@ -10,6 +10,8 @@ export const list = query({
 export const save = mutation({
   args: { coordinates: v.array(v.array(v.number())) },
   handler: async (ctx, args) => {
-    await ctx.db.insert("noGoAreas", { coordinates: args.coordinates });
+    const userId = await ctx.auth.getUserIdentity();
+    if (!userId) throw new Error("Unauthenticated");
+    await ctx.db.insert("noGoAreas", { coordinates: args.coordinates, userId: userId.subject });
   },
 });
