@@ -1,3 +1,6 @@
+import { ClerkApp } from "@clerk/remix";
+import { rootAuthLoader } from "@clerk/remix/ssr.server";
+import type { LoaderFunction } from "@remix-run/node";
 import {
   json,
   Links,
@@ -8,18 +11,21 @@ import {
   useLoaderData,
 } from "@remix-run/react";
 import { ConvexProvider, ConvexReactClient } from "convex/react";
-
 import { useState } from "react";
 import "./tailwind.css";
 
-export async function loader() {
-  const convexUrl =  process.env.CONVEX_URL;
-  if (!convexUrl) {
-    throw new Error("CONVEX_URL is not set");
-  }
-  return json({ ENV: { CONVEX_URL: convexUrl } });
-}
-
+export const loader: LoaderFunction = (args) => {
+  return rootAuthLoader(args, async () => {
+    
+    const convexUrl = process.env.CONVEX_URL;
+    if (!convexUrl) {
+      throw new Error("CONVEX_URL is not set");
+    }
+    return json({ 
+      ENV: { CONVEX_URL: convexUrl },
+    });
+  });
+};
 
 export function Layout({ children }: { children: React.ReactNode }) {
   const {ENV} = useLoaderData<typeof loader>();
@@ -41,6 +47,8 @@ export function Layout({ children }: { children: React.ReactNode }) {
   );
 }
 
-export default function App() {
+function App() {
   return <Outlet />;
 }
+
+export default ClerkApp(App);
